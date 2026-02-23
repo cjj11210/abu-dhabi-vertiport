@@ -1,20 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const archivo = Archivo({
+  variable: "--font-archivo",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["100", "400", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Abu Dhabi Vertiport Exclusivity Zone Planner",
+  title: "Archer — Vertiport Exclusivity Zone Planner",
   description:
     "Interactive tool to visualize and compare alternative exclusivity models for Abu Dhabi's 14 planned public vertiports",
 };
@@ -26,9 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${archivo.variable} antialiased`}>
         <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>
