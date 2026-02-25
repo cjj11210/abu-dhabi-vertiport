@@ -178,7 +178,6 @@ export default function LayerToggles() {
           title="PPP Vertiports"
           color="#3b82f6"
           layerKey="pppVertiports"
-          defaultExpanded={true}
         >
           <PPPVertiportToggles />
         </LayerSection>

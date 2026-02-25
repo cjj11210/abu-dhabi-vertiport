@@ -18,22 +18,6 @@ export const helipadLocations: MapLocation[] = [
     enabled: true,
   },
   {
-    id: "helipad-3",
-    name: "Al Bateen Executive Airport (Temp)",
-    lat: 24.42739443,
-    lng: 54.45293002,
-    layerType: "helipad",
-    enabled: true,
-  },
-  {
-    id: "helipad-4",
-    name: "Al Bateen Executive Airport (Permanent)",
-    lat: 24.43100262,
-    lng: 54.44765896,
-    layerType: "helipad",
-    enabled: true,
-  },
-  {
     id: "helipad-5",
     name: "Emirates Palace Helipad",
     lat: 24.46226418,

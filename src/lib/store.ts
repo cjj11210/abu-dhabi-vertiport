@@ -96,11 +96,11 @@ export const useStore = create<AppState>((set) => ({
 
   // Layer visibility
   layerVisibility: {
-    pppVertiports: true,
-    ncth: true,
-    heliports: true,
-    helipads: true,
-    vfrRoutes: true,
+    pppVertiports: false,
+    ncth: false,
+    heliports: false,
+    helipads: false,
+    vfrRoutes: false,
   },
   setLayerVisibility: (layer, visible) =>
     set((state) => ({
