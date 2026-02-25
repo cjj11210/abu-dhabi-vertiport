@@ -10,7 +10,7 @@ const archivo = Archivo({
 });
 
 export const metadata: Metadata = {
-  title: "Archer — Vertiport Exclusivity Zone Planner",
+  title: "Vertiport Network Planner — Abu Dhabi",
   description:
     "Interactive tool to visualize and compare alternative exclusivity models for Abu Dhabi's 14 planned public vertiports",
 };

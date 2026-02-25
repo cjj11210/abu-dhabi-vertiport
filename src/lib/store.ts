@@ -10,6 +10,18 @@ import type {
   Vertiport,
 } from "@/lib/models/types";
 import { vertiports as defaultVertiports } from "@/lib/data/vertiports";
+import type { MapLocation } from "@/lib/data/layers/types";
+import { ncthLocations as defaultNcth } from "@/lib/data/layers/ncth-locations";
+import { heliportLocations as defaultHeliports } from "@/lib/data/layers/heliports";
+import { helipadLocations as defaultHelipads } from "@/lib/data/layers/helipads";
+
+export interface LayerVisibility {
+  pppVertiports: boolean;
+  ncth: boolean;
+  heliports: boolean;
+  helipads: boolean;
+  vfrRoutes: boolean;
+}
 
 interface AppState {
   // Active model
@@ -20,6 +32,23 @@ interface AppState {
   vertiports: Vertiport[];
   toggleVertiport: (id: string) => void;
   setAllVertiports: (enabled: boolean) => void;
+
+  // Layer visibility
+  layerVisibility: LayerVisibility;
+  setLayerVisibility: (layer: keyof LayerVisibility, visible: boolean) => void;
+
+  // New location layers
+  ncthLocations: MapLocation[];
+  toggleNcthLocation: (id: string) => void;
+  setAllNcthLocations: (enabled: boolean) => void;
+
+  heliportLocations: MapLocation[];
+  toggleHeliportLocation: (id: string) => void;
+  setAllHeliportLocations: (enabled: boolean) => void;
+
+  helipadLocations: MapLocation[];
+  toggleHelipadLocation: (id: string) => void;
+  setAllHelipadLocations: (enabled: boolean) => void;
 
   // Model parameters
   fixedRadiusParams: FixedRadiusParams;
@@ -63,6 +92,58 @@ export const useStore = create<AppState>((set) => ({
   setAllVertiports: (enabled) =>
     set((state) => ({
       vertiports: state.vertiports.map((v) => ({ ...v, enabled })),
+    })),
+
+  // Layer visibility
+  layerVisibility: {
+    pppVertiports: true,
+    ncth: true,
+    heliports: true,
+    helipads: true,
+    vfrRoutes: true,
+  },
+  setLayerVisibility: (layer, visible) =>
+    set((state) => ({
+      layerVisibility: { ...state.layerVisibility, [layer]: visible },
+    })),
+
+  // NCT&H locations
+  ncthLocations: defaultNcth.map((l) => ({ ...l })),
+  toggleNcthLocation: (id) =>
+    set((state) => ({
+      ncthLocations: state.ncthLocations.map((l) =>
+        l.id === id ? { ...l, enabled: !l.enabled } : l
+      ),
+    })),
+  setAllNcthLocations: (enabled) =>
+    set((state) => ({
+      ncthLocations: state.ncthLocations.map((l) => ({ ...l, enabled })),
+    })),
+
+  // Heliport locations
+  heliportLocations: defaultHeliports.map((l) => ({ ...l })),
+  toggleHeliportLocation: (id) =>
+    set((state) => ({
+      heliportLocations: state.heliportLocations.map((l) =>
+        l.id === id ? { ...l, enabled: !l.enabled } : l
+      ),
+    })),
+  setAllHeliportLocations: (enabled) =>
+    set((state) => ({
+      heliportLocations: state.heliportLocations.map((l) => ({ ...l, enabled })),
+    })),
+
+  // Helipad locations
+  helipadLocations: defaultHelipads.map((l) => ({ ...l })),
+  toggleHelipadLocation: (id) =>
+    set((state) => ({
+      helipadLocations: state.helipadLocations.map((l) =>
+        l.id === id ? { ...l, enabled: !l.enabled } : l
+      ),
+    })),
+  setAllHelipadLocations: (enabled) =>
+    set((state) => ({
+      helipadLocations: state.helipadLocations.map((l) => ({ ...l, enabled })),
     })),
 
   fixedRadiusParams: { radiusKm: 5 },

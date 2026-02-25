@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
-import { Menu, X } from "lucide-react";
+import { Menu, X, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Sidebar from "@/components/sidebar/Sidebar";
 import MapWrapper from "@/components/map/MapWrapper";
@@ -13,13 +12,13 @@ export default function Home() {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem("archer-auth") === "true") {
+    if (sessionStorage.getItem("app-auth") === "true") {
       setAuthenticated(true);
     }
   }, []);
 
   function handleAuth() {
-    sessionStorage.setItem("archer-auth", "true");
+    sessionStorage.setItem("app-auth", "true");
     setAuthenticated(true);
   }
 
@@ -43,40 +42,25 @@ export default function Home() {
           >
             {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
-          <Image
-            src="/archer-logo-white.png"
-            alt="Archer"
-            width={120}
-            height={40}
-            style={{ objectFit: "contain" }}
-            priority
-          />
-          <div
-            style={{
-              width: "1px",
-              height: "24px",
-              backgroundColor: "rgba(255,255,255,0.2)",
-            }}
-          />
+          <MapPin className="h-5 w-5 text-white" />
           <div>
             <p
-              className="hidden sm:block"
               style={{
-                fontSize: "10px",
+                fontSize: "13px",
                 fontWeight: 700,
-                letterSpacing: "0.15em",
+                letterSpacing: "0.08em",
                 textTransform: "uppercase",
-                color: "rgba(255,255,255,0.6)",
+                color: "#FFFFFF",
               }}
             >
-              VERTIPORT NETWORK PLANNER
+              Vertiport Network Planner
             </p>
             <p
               className="hidden sm:block"
               style={{
-                fontSize: "12px",
+                fontSize: "11px",
                 fontWeight: 100,
-                color: "rgba(255,255,255,0.45)",
+                color: "rgba(255,255,255,0.5)",
               }}
             >
               Abu Dhabi Exclusivity Zone Analysis

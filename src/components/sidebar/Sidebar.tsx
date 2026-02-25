@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import ModelSelector from "./ModelSelector";
 import ParameterPanel from "./ParameterPanel";
-import VertiportToggles from "./VertiportToggles";
+import LayerToggles from "./LayerToggles";
 import StatsPanel from "@/components/stats/StatsPanel";
 
 export default function Sidebar() {
@@ -54,7 +54,7 @@ export default function Sidebar() {
         </div>
 
         <div className="border-t border-slate-100 pt-4">
-          <VertiportToggles />
+          <LayerToggles />
         </div>
 
         <div className="border-t border-slate-100 pt-4">

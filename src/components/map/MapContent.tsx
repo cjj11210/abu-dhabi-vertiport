@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
-import { MapContainer, TileLayer, GeoJSON, CircleMarker, Tooltip, Marker, useMap } from "react-leaflet";
+import { useEffect, useMemo } from "react";
+import { MapContainer, TileLayer, GeoJSON, CircleMarker, Tooltip, Marker, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useStore } from "@/lib/store";
 import { useZoneCalculation } from "@/hooks/useZoneCalculation";
 import { cityBoundary } from "@/lib/data/city-boundary";
+import { vrpWaypoints, vfrRoutes } from "@/lib/data/layers";
 import type { ZoneResult, Vertiport } from "@/lib/models/types";
 import type { PathOptions } from "leaflet";
 import MapLegend from "./MapLegend";
@@ -51,7 +52,7 @@ const cityBoundaryStyle: PathOptions = {
   dashArray: "8 6",
 };
 
-// Category colors for markers
+// Category colors for PPP vertiport markers
 const categoryColors: Record<string, string> = {
   "urban-core": "#1d4ed8",
   urban: "#2563eb",
@@ -69,8 +70,11 @@ function FitBounds() {
 }
 
 function ZoneOverlays() {
+  const visible = useStore((s) => s.layerVisibility.pppVertiports);
   const zones = useZoneCalculation();
   const opacity = useStore((s) => s.zoneOpacity);
+
+  if (!visible) return null;
 
   return (
     <>
@@ -111,13 +115,13 @@ const capacityLabels: Record<string, string> = {
   micro: "Micro",
 };
 
-function createNameLabel(name: string) {
+function createNameLabel(name: string, color?: string) {
   return L.divIcon({
     className: "vertiport-label",
     html: `<span style="
       font-size: 11px;
       font-weight: 600;
-      color: #1e293b;
+      color: ${color || "#1e293b"};
       text-shadow: 0 0 3px white, 0 0 3px white, 0 0 3px white, 0 0 3px white;
       white-space: nowrap;
       pointer-events: none;
@@ -127,11 +131,46 @@ function createNameLabel(name: string) {
   });
 }
 
+function createDiamondIcon(color: string) {
+  return L.divIcon({
+    className: "helipad-diamond",
+    html: `<div style="
+      width: 12px;
+      height: 12px;
+      background-color: ${color};
+      border: 2px solid white;
+      transform: rotate(45deg);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    "></div>`,
+    iconSize: [12, 12],
+    iconAnchor: [6, 6],
+  });
+}
+
+function createWaypointLabel(code: string) {
+  return L.divIcon({
+    className: "waypoint-label",
+    html: `<span style="
+      font-size: 9px;
+      font-weight: 700;
+      color: #06b6d4;
+      text-shadow: 0 0 2px white, 0 0 2px white, 0 0 2px white;
+      white-space: nowrap;
+      pointer-events: none;
+    ">${code}</span>`,
+    iconSize: [0, 0],
+    iconAnchor: [0, -6],
+  });
+}
+
 function VertiportMarkers() {
+  const visible = useStore((s) => s.layerVisibility.pppVertiports);
   const vertiports = useStore((s) => s.vertiports);
   const zones = useZoneCalculation();
-  const enabledVertiports = vertiports.filter((v) => v.enabled);
 
+  if (!visible) return null;
+
+  const enabledVertiports = vertiports.filter((v) => v.enabled);
   const zoneMap = new Map(zones.map((z) => [z.vertiportId, z]));
 
   return (
@@ -182,6 +221,198 @@ function VertiportMarkers() {
   );
 }
 
+function NcthMarkers() {
+  const visible = useStore((s) => s.layerVisibility.ncth);
+  const locations = useStore((s) => s.ncthLocations);
+
+  if (!visible) return null;
+
+  const enabled = locations.filter((l) => l.enabled);
+
+  return (
+    <>
+      {enabled.map((loc) => (
+        <span key={loc.id}>
+          <CircleMarker
+            center={[loc.lat, loc.lng]}
+            radius={7}
+            pathOptions={{
+              fillColor: "#10b981",
+              fillOpacity: 1,
+              color: "#ffffff",
+              weight: 2,
+              opacity: 1,
+            }}
+          >
+            <Tooltip direction="top" offset={[0, -8]} opacity={0.95}>
+              <div className="text-xs">
+                <div className="font-bold">{loc.name}</div>
+                <div className="text-gray-500">NCT&H Location</div>
+              </div>
+            </Tooltip>
+          </CircleMarker>
+          <Marker
+            position={[loc.lat, loc.lng]}
+            icon={createNameLabel(loc.name, "#065f46")}
+            interactive={false}
+          />
+        </span>
+      ))}
+    </>
+  );
+}
+
+const heliportCategoryLabels: Record<string, string> = {
+  commercial: "Commercial",
+  private: "Private",
+  hospital: "Hospital",
+  hotel: "Hotel",
+};
+
+function HeliportMarkers() {
+  const visible = useStore((s) => s.layerVisibility.heliports);
+  const locations = useStore((s) => s.heliportLocations);
+
+  if (!visible) return null;
+
+  const enabled = locations.filter((l) => l.enabled);
+
+  return (
+    <>
+      {enabled.map((loc) => (
+        <CircleMarker
+          key={loc.id}
+          center={[loc.lat, loc.lng]}
+          radius={6}
+          pathOptions={{
+            fillColor: "#8b5cf6",
+            fillOpacity: 1,
+            color: "#ffffff",
+            weight: 2,
+            opacity: 1,
+          }}
+        >
+          <Tooltip direction="top" offset={[0, -8]} opacity={0.95}>
+            <div className="text-xs">
+              <div className="font-bold">{loc.name}</div>
+              <div className="text-gray-500">
+                Heliport — {loc.category ? heliportCategoryLabels[loc.category] || loc.category : "Unknown"}
+              </div>
+            </div>
+          </Tooltip>
+        </CircleMarker>
+      ))}
+    </>
+  );
+}
+
+function HelipadMarkers() {
+  const visible = useStore((s) => s.layerVisibility.helipads);
+  const locations = useStore((s) => s.helipadLocations);
+
+  if (!visible) return null;
+
+  const enabled = locations.filter((l) => l.enabled);
+  const icon = createDiamondIcon("#f59e0b");
+
+  return (
+    <>
+      {enabled.map((loc) => (
+        <span key={loc.id}>
+          <Marker
+            position={[loc.lat, loc.lng]}
+            icon={icon}
+          >
+            <Tooltip direction="top" offset={[0, -10]} opacity={0.95}>
+              <div className="text-xs">
+                <div className="font-bold">{loc.name}</div>
+                <div className="text-gray-500">Hybrid Helipad</div>
+              </div>
+            </Tooltip>
+          </Marker>
+          <Marker
+            position={[loc.lat, loc.lng]}
+            icon={createNameLabel(loc.name, "#92400e")}
+            interactive={false}
+          />
+        </span>
+      ))}
+    </>
+  );
+}
+
+function VFRRouteOverlay() {
+  const visible = useStore((s) => s.layerVisibility.vfrRoutes);
+
+  const waypointMap = useMemo(() => {
+    const map = new Map<string, { lat: number; lng: number }>();
+    for (const wp of vrpWaypoints) {
+      map.set(wp.code, { lat: wp.lat, lng: wp.lng });
+    }
+    return map;
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <>
+      {/* Route polylines */}
+      {vfrRoutes.map((route) => {
+        const positions: [number, number][] = [];
+        for (const code of route.waypoints) {
+          const wp = waypointMap.get(code);
+          if (wp) positions.push([wp.lat, wp.lng]);
+        }
+        if (positions.length < 2) return null;
+        return (
+          <Polyline
+            key={route.id}
+            positions={positions}
+            pathOptions={{
+              color: "#06b6d4",
+              weight: 2,
+              opacity: 0.7,
+              dashArray: "6 4",
+            }}
+          >
+            <Tooltip sticky opacity={0.95}>
+              <div className="text-xs font-medium">{route.name}</div>
+            </Tooltip>
+          </Polyline>
+        );
+      })}
+      {/* Waypoint markers */}
+      {vrpWaypoints.map((wp) => (
+        <span key={wp.code}>
+          <CircleMarker
+            center={[wp.lat, wp.lng]}
+            radius={3}
+            pathOptions={{
+              fillColor: "#06b6d4",
+              fillOpacity: 1,
+              color: "#ffffff",
+              weight: 1.5,
+              opacity: 1,
+            }}
+          >
+            <Tooltip direction="top" offset={[0, -5]} opacity={0.95}>
+              <div className="text-xs">
+                <div className="font-bold">{wp.code}</div>
+                {wp.name && <div className="text-gray-500">{wp.name}</div>}
+              </div>
+            </Tooltip>
+          </CircleMarker>
+          <Marker
+            position={[wp.lat, wp.lng]}
+            icon={createWaypointLabel(wp.code)}
+            interactive={false}
+          />
+        </span>
+      ))}
+    </>
+  );
+}
+
 function CityBoundaryLayer() {
   const show = useStore((s) => s.showCityBoundary);
   if (!show) return null;
@@ -206,6 +437,10 @@ export default function MapContent() {
         <CityBoundaryLayer />
         <ZoneOverlays />
         <VertiportMarkers />
+        <NcthMarkers />
+        <HeliportMarkers />
+        <HelipadMarkers />
+        <VFRRouteOverlay />
       </MapContainer>
       <MapLegend />
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import { MapPin } from "lucide-react";
 
 interface LoginPageProps {
   onAuth: () => void;
@@ -14,7 +14,7 @@ export default function LoginPage({ onAuth }: LoginPageProps) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password === "Archer1") {
+    if (password === "ITC") {
       onAuth();
     } else {
       setError(true);
@@ -37,15 +37,10 @@ export default function LoginPage({ onAuth }: LoginPageProps) {
           boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
         }}
       >
-        {/* Logo */}
-        <Image
-          src="/archer-logo-black.png"
-          alt="Archer"
-          width={220}
-          height={72}
-          priority
-          style={{ objectFit: "contain", marginBottom: "36px" }}
-        />
+        {/* Header Icon */}
+        <div style={{ marginBottom: "36px", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+          <MapPin size={40} strokeWidth={1.5} color="#000000" />
+        </div>
 
         {/* Subheading */}
         <p
@@ -162,7 +157,7 @@ export default function LoginPage({ onAuth }: LoginPageProps) {
         color: "#999999",
         letterSpacing: "0.05em",
       }}>
-        Internal use only — Archer Aviation
+        Authorized access only
       </p>
 
       <style jsx>{`

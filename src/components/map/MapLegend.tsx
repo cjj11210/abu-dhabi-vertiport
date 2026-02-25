@@ -29,7 +29,7 @@ const modelDescriptions: Record<string, { title: string; summary: string }> = {
   },
 };
 
-const categoryColors: { color: string; label: string }[] = [
+const pppCategoryColors: { color: string; label: string }[] = [
   { color: "#1d4ed8", label: "Urban Core" },
   { color: "#2563eb", label: "Urban" },
   { color: "#3b82f6", label: "Suburban" },
@@ -39,6 +39,7 @@ const categoryColors: { color: string; label: string }[] = [
 
 export default function MapLegend() {
   const activeModel = useStore((s) => s.activeModel);
+  const layerVisibility = useStore((s) => s.layerVisibility);
   const info = modelDescriptions[activeModel] || { title: "Legend", summary: "" };
 
   const showConditional =
@@ -58,35 +59,92 @@ export default function MapLegend() {
       <div style={{ borderBottom: "1px solid #e2e8f0" }} />
 
       {/* Zone types */}
-      <div className="space-y-1.5">
-        <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Exclusivity Zones</div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-sm bg-red-500/60 border border-red-600" />
-          <span>Full Exclusivity — no private operators</span>
-        </div>
-        {showConditional && (
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-sm bg-yellow-400/60 border border-yellow-500" />
-            <span>Conditional — private allowed with limits</span>
+      {layerVisibility.pppVertiports && (
+        <>
+          <div className="space-y-1.5">
+            <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Exclusivity Zones</div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-sm bg-red-500/60 border border-red-600" />
+              <span>Full Exclusivity — no private operators</span>
+            </div>
+            {showConditional && (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-sm bg-yellow-400/60 border border-yellow-500" />
+                <span>Conditional — private allowed with limits</span>
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      <div style={{ borderBottom: "1px solid #e2e8f0" }} />
+          <div style={{ borderBottom: "1px solid #e2e8f0" }} />
 
-      {/* Vertiport categories */}
-      <div className="space-y-1.5">
-        <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Vertiport Category</div>
-        {categoryColors.map((c) => (
-          <div key={c.label} className="flex items-center gap-2">
+          {/* Vertiport categories */}
+          <div className="space-y-1.5">
+            <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">PPP Vertiports</div>
+            {pppCategoryColors.map((c) => (
+              <div key={c.label} className="flex items-center gap-2">
+                <div
+                  className="w-3.5 h-3.5 rounded-full border-2 border-white shadow"
+                  style={{ backgroundColor: c.color }}
+                />
+                <span>{c.label}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* NCT&H */}
+      {layerVisibility.ncth && (
+        <>
+          <div style={{ borderBottom: "1px solid #e2e8f0" }} />
+          <div className="flex items-center gap-2">
             <div
               className="w-3.5 h-3.5 rounded-full border-2 border-white shadow"
-              style={{ backgroundColor: c.color }}
+              style={{ backgroundColor: "#10b981" }}
             />
-            <span>{c.label}</span>
+            <span>NCT&H Locations</span>
           </div>
-        ))}
-      </div>
+        </>
+      )}
+
+      {/* Heliports */}
+      {layerVisibility.heliports && (
+        <>
+          <div style={{ borderBottom: "1px solid #e2e8f0" }} />
+          <div className="flex items-center gap-2">
+            <div
+              className="w-3.5 h-3.5 rounded-full border-2 border-white shadow"
+              style={{ backgroundColor: "#8b5cf6" }}
+            />
+            <span>Abu Dhabi Heliports</span>
+          </div>
+        </>
+      )}
+
+      {/* Helipads */}
+      {layerVisibility.helipads && (
+        <>
+          <div style={{ borderBottom: "1px solid #e2e8f0" }} />
+          <div className="flex items-center gap-2">
+            <div
+              className="w-3 h-3 border-2 border-white shadow"
+              style={{ backgroundColor: "#f59e0b", transform: "rotate(45deg)" }}
+            />
+            <span>Hybrid Helipads</span>
+          </div>
+        </>
+      )}
+
+      {/* VFR Routes */}
+      {layerVisibility.vfrRoutes && (
+        <>
+          <div style={{ borderBottom: "1px solid #e2e8f0" }} />
+          <div className="flex items-center gap-2">
+            <div style={{ width: "16px", height: "2px", borderTop: "2px dashed #06b6d4" }} />
+            <span>VFR Routes</span>
+          </div>
+        </>
+      )}
     </div>
   );
 }
