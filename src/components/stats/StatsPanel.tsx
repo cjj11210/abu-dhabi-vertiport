@@ -1,13 +1,38 @@
 "use client";
 
 import { useZoneCalculation } from "@/hooks/useZoneCalculation";
+import { useLayerZoneCalculation } from "@/hooks/useLayerZoneCalculation";
 import { useCoverageStats } from "@/hooks/useCoverageStats";
+import { useStore } from "@/lib/store";
 import CoverageChart from "./CoverageChart";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
+import type { ZoneResult } from "@/lib/models/types";
 
 export default function StatsPanel() {
-  const zones = useZoneCalculation();
-  const stats = useCoverageStats(zones);
+  const layerVisibility = useStore((s) => s.layerVisibility);
+  const zoneVisibility = useStore((s) => s.zoneVisibility);
+
+  // PPP vertiport zones
+  const pppZones = useZoneCalculation();
+
+  // Other layer zones
+  const ncthLocations = useStore((s) => s.ncthLocations);
+  const heliportLocations = useStore((s) => s.heliportLocations);
+  const helipadLocations = useStore((s) => s.helipadLocations);
+
+  const ncthZones = useLayerZoneCalculation(ncthLocations, layerVisibility.ncth && zoneVisibility.ncth);
+  const heliportZones = useLayerZoneCalculation(heliportLocations, layerVisibility.heliports && zoneVisibility.heliports);
+  const helipadZones = useLayerZoneCalculation(helipadLocations, layerVisibility.helipads && zoneVisibility.helipads);
+
+  // Combine all active zones for impact analysis
+  const allZones: ZoneResult[] = [
+    ...(layerVisibility.pppVertiports && zoneVisibility.pppVertiports ? pppZones : []),
+    ...ncthZones,
+    ...heliportZones,
+    ...helipadZones,
+  ];
+
+  const stats = useCoverageStats(allZones);
 
   const compIcon =
     stats.comparisonVsBaseline > 0 ? (

@@ -23,6 +23,13 @@ export interface LayerVisibility {
   vfrRoutes: boolean;
 }
 
+export interface ZoneVisibility {
+  pppVertiports: boolean;
+  ncth: boolean;
+  heliports: boolean;
+  helipads: boolean;
+}
+
 interface AppState {
   // Active model
   activeModel: ExclusivityModel;
@@ -36,6 +43,10 @@ interface AppState {
   // Layer visibility
   layerVisibility: LayerVisibility;
   setLayerVisibility: (layer: keyof LayerVisibility, visible: boolean) => void;
+
+  // Per-layer zone visibility
+  zoneVisibility: ZoneVisibility;
+  setZoneVisibility: (layer: keyof ZoneVisibility, visible: boolean) => void;
 
   // New location layers
   ncthLocations: MapLocation[];
@@ -105,6 +116,18 @@ export const useStore = create<AppState>((set) => ({
   setLayerVisibility: (layer, visible) =>
     set((state) => ({
       layerVisibility: { ...state.layerVisibility, [layer]: visible },
+    })),
+
+  // Per-layer zone visibility (independent of layer visibility)
+  zoneVisibility: {
+    pppVertiports: true,
+    ncth: true,
+    heliports: true,
+    helipads: true,
+  },
+  setZoneVisibility: (layer, visible) =>
+    set((state) => ({
+      zoneVisibility: { ...state.zoneVisibility, [layer]: visible },
     })),
 
   // NCT&H locations

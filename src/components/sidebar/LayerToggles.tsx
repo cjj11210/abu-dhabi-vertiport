@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { useStore, type LayerVisibility } from "@/lib/store";
+import { useStore, type LayerVisibility, type ZoneVisibility } from "@/lib/store";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,15 +34,18 @@ interface LayerSectionProps {
   title: string;
   color: string;
   layerKey: keyof LayerVisibility;
+  zoneKey?: keyof ZoneVisibility;
   children?: React.ReactNode;
-  defaultExpanded?: boolean;
 }
 
-function LayerSection({ title, color, layerKey, children, defaultExpanded = false }: LayerSectionProps) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
+function LayerSection({ title, color, layerKey, zoneKey, children }: LayerSectionProps) {
+  const [expanded, setExpanded] = useState(false);
   const layerVisibility = useStore((s) => s.layerVisibility);
   const setLayerVisibility = useStore((s) => s.setLayerVisibility);
+  const zoneVisibility = useStore((s) => s.zoneVisibility);
+  const setZoneVisibility = useStore((s) => s.setZoneVisibility);
   const visible = layerVisibility[layerKey];
+  const zonesOn = zoneKey ? zoneVisibility[zoneKey] : false;
 
   return (
     <div className="space-y-1">
@@ -68,6 +71,19 @@ function LayerSection({ title, color, layerKey, children, defaultExpanded = fals
           className="scale-75"
         />
       </div>
+      {/* Zone toggle - shown when layer is visible */}
+      {visible && zoneKey && (
+        <div className="ml-5 flex items-center gap-1.5">
+          <input
+            type="checkbox"
+            checked={zonesOn}
+            onChange={(e) => setZoneVisibility(zoneKey, e.target.checked)}
+            className="h-3 w-3 rounded border-slate-300 accent-current"
+            style={{ accentColor: color }}
+          />
+          <span className="text-[10px] text-slate-500">Show exclusivity zones</span>
+        </div>
+      )}
       {expanded && visible && children && (
         <div className="ml-5 mt-1">
           {children}
@@ -140,10 +156,6 @@ function LocationToggleList({ locations, onToggle, onSetAll, showCategory }: Loc
 }
 
 export default function LayerToggles() {
-  const vertiports = useStore((s) => s.vertiports);
-  const toggleVertiport = useStore((s) => s.toggleVertiport);
-  const setAllVertiports = useStore((s) => s.setAllVertiports);
-
   const ncthLocations = useStore((s) => s.ncthLocations);
   const toggleNcthLocation = useStore((s) => s.toggleNcthLocation);
   const setAllNcthLocations = useStore((s) => s.setAllNcthLocations);
@@ -155,16 +167,6 @@ export default function LayerToggles() {
   const helipadLocations = useStore((s) => s.helipadLocations);
   const toggleHelipadLocation = useStore((s) => s.toggleHelipadLocation);
   const setAllHelipadLocations = useStore((s) => s.setAllHelipadLocations);
-
-  // Adapt vertiports to the LocationToggleList interface
-  const vertiportItems: MapLocation[] = vertiports.map((v) => ({
-    id: v.id,
-    name: v.name,
-    lat: v.lat,
-    lng: v.lng,
-    layerType: "ncth" as const, // placeholder, not used
-    enabled: v.enabled,
-  }));
 
   return (
     <div className="space-y-2">
@@ -178,6 +180,7 @@ export default function LayerToggles() {
           title="PPP Vertiports"
           color="#3b82f6"
           layerKey="pppVertiports"
+          zoneKey="pppVertiports"
         >
           <PPPVertiportToggles />
         </LayerSection>
@@ -187,6 +190,7 @@ export default function LayerToggles() {
           title="NCT&H Locations"
           color="#10b981"
           layerKey="ncth"
+          zoneKey="ncth"
         >
           <LocationToggleList
             locations={ncthLocations}
@@ -200,6 +204,7 @@ export default function LayerToggles() {
           title="Abu Dhabi Heliports"
           color="#8b5cf6"
           layerKey="heliports"
+          zoneKey="heliports"
         >
           <LocationToggleList
             locations={heliportLocations}
@@ -214,6 +219,7 @@ export default function LayerToggles() {
           title="Hybrid Helipads"
           color="#f59e0b"
           layerKey="helipads"
+          zoneKey="helipads"
         >
           <LocationToggleList
             locations={helipadLocations}
@@ -222,7 +228,7 @@ export default function LayerToggles() {
           />
         </LayerSection>
 
-        {/* VFR Routes */}
+        {/* VFR Routes — no zones */}
         <LayerSection
           title="VFR Routes"
           color="#06b6d4"

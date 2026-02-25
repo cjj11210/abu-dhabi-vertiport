@@ -1,50 +1,93 @@
 import type { Feature, Polygon } from "geojson";
+import * as turf from "@turf/turf";
 
-// Abu Dhabi city proper boundary (approximate polygon covering the main island and near-shore)
-// This covers ~87 km2 of the main urban area
+// Abu Dhabi urban area boundary — covers the main island, Saadiyat, Yas, Jubail,
+// Reem, and the mainland corridor south to MBZ City / Khalifa City.
+// Traced to follow the actual coastline and urban extent more closely.
 export const cityBoundary: Feature<Polygon> = {
   type: "Feature",
-  properties: { name: "Abu Dhabi City Proper" },
+  properties: { name: "Abu Dhabi Urban Area" },
   geometry: {
     type: "Polygon",
     coordinates: [
       [
-        [54.2600, 24.3800], // SW - south of Hudayriyat
-        [54.2700, 24.4100], // W coast
-        [54.2500, 24.4300], // Hudayriyat west
-        [54.2400, 24.4500], // NW tip
-        [54.2800, 24.4700], // Corniche west
-        [54.3000, 24.4900], // Corniche NW
-        [54.3200, 24.5000], // Corniche north
-        [54.3500, 24.5100], // N coast
-        [54.3800, 24.5150], // N toward Saadiyat
-        [54.4100, 24.5200], // Saadiyat approach
-        [54.4400, 24.5500], // Saadiyat north
-        [54.4700, 24.5600], // Saadiyat NE
-        [54.5000, 24.5700], // NE Jubail area
-        [54.5300, 24.5600], // Jubail
-        [54.5500, 24.5400], // East of Jubail
-        [54.5800, 24.5200], // Yas approach
-        [54.6200, 24.5100], // Yas north
-        [54.6500, 24.5000], // Yas NE
-        [54.7000, 24.4800], // East toward KEZAD
-        [54.7300, 24.4500], // KEZAD area
-        [54.7500, 24.4200], // Airport east
-        [54.7300, 24.3800], // SE
-        [54.7000, 24.3600], // South
-        [54.6500, 24.3500], // S toward MBZ
-        [54.6000, 24.3700], // MBZ south
-        [54.5500, 24.3800], // SW of airport
-        [54.5000, 24.3900], // Mid-south
-        [54.4500, 24.3900], // ADNEC south
-        [54.4000, 24.3800], // S coast
-        [54.3500, 24.3700], // SW approach
-        [54.3000, 24.3700], // SW
-        [54.2600, 24.3800], // Close polygon
+        // SW — Hudayriyat Island south
+        [54.295, 24.390],
+        // W coast — Hudayriyat west
+        [54.270, 24.410],
+        // NW — Al Bateen coast
+        [54.290, 24.440],
+        // Corniche west
+        [54.305, 24.460],
+        // Corniche NW
+        [54.320, 24.475],
+        // Corniche north
+        [54.340, 24.488],
+        // N — breakwater / marina
+        [54.355, 24.495],
+        // Al Reem Island west
+        [54.375, 24.505],
+        // Al Reem Island north
+        [54.400, 24.510],
+        // Saadiyat bridge
+        [54.420, 24.520],
+        // Saadiyat west
+        [54.435, 24.540],
+        // Saadiyat north coast
+        [54.450, 24.555],
+        // Saadiyat NE
+        [54.480, 24.560],
+        // Jubail Island NW
+        [54.500, 24.555],
+        // Jubail Island NE
+        [54.530, 24.545],
+        // Between Jubail and Yas
+        [54.555, 24.530],
+        // Yas Island NW
+        [54.580, 24.510],
+        // Yas Island north
+        [54.600, 24.500],
+        // Yas Island NE
+        [54.625, 24.490],
+        // East of Yas — toward airport
+        [54.650, 24.480],
+        // Airport NE
+        [54.680, 24.470],
+        // East boundary
+        [54.700, 24.450],
+        // Airport SE
+        [54.690, 24.420],
+        // South of airport
+        [54.670, 24.395],
+        // Khalifa City east
+        [54.630, 24.370],
+        // MBZ City east
+        [54.580, 24.345],
+        // MBZ City south
+        [54.550, 24.335],
+        // Musaffah east
+        [54.520, 24.340],
+        // Musaffah
+        [54.490, 24.355],
+        // South central
+        [54.460, 24.370],
+        // ADNEC south
+        [54.430, 24.380],
+        // Al Bateen south
+        [54.400, 24.385],
+        // SW approach
+        [54.360, 24.385],
+        // Hudayriyat south
+        [54.330, 24.388],
+        // Close polygon
+        [54.295, 24.390],
       ],
     ],
   },
 };
+
+// Compute the actual area from the polygon (in km²)
+export const CITY_AREA_KM2 = Math.round(turf.area(cityBoundary) / 1_000_000 * 10) / 10;
 
 // Metro area boundary (~600 km2) - much larger, includes surrounding development
 export const metroBoundary: Feature<Polygon> = {
@@ -123,5 +166,4 @@ export const landBoundary: Feature<Polygon> = {
   },
 };
 
-export const CITY_AREA_KM2 = 87;
 export const METRO_AREA_KM2 = 600;

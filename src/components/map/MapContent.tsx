@@ -71,11 +71,12 @@ function FitBounds() {
 }
 
 function ZoneOverlays() {
-  const visible = useStore((s) => s.layerVisibility.pppVertiports);
+  const layerVisible = useStore((s) => s.layerVisibility.pppVertiports);
+  const zonesVisible = useStore((s) => s.zoneVisibility.pppVertiports);
   const zones = useZoneCalculation();
   const opacity = useStore((s) => s.zoneOpacity);
 
-  if (!visible) return null;
+  if (!layerVisible || !zonesVisible) return null;
 
   return (
     <>
@@ -446,9 +447,13 @@ function getLayerZoneStyle(
   };
 }
 
+const layerKeyMap = { ncth: "ncth", heliport: "heliports", helipad: "helipads" } as const;
+const zoneKeyMap = { ncth: "ncth", heliport: "heliports", helipad: "helipads" } as const;
+
 function LayerZoneOverlay({ layerType }: { layerType: "ncth" | "heliport" | "helipad" }) {
   const opacity = useStore((s) => s.zoneOpacity);
-  const visible = useStore((s) => s.layerVisibility[layerType === "heliport" ? "heliports" : layerType === "helipad" ? "helipads" : "ncth"]);
+  const layerVisible = useStore((s) => s.layerVisibility[layerKeyMap[layerType]]);
+  const zonesVisible = useStore((s) => s.zoneVisibility[zoneKeyMap[layerType]]);
 
   const locationsSelector = layerType === "ncth"
     ? (s: ReturnType<typeof useStore.getState>) => s.ncthLocations
@@ -457,9 +462,9 @@ function LayerZoneOverlay({ layerType }: { layerType: "ncth" | "heliport" | "hel
     : (s: ReturnType<typeof useStore.getState>) => s.helipadLocations;
 
   const locations = useStore(locationsSelector);
-  const zones = useLayerZoneCalculation(locations, visible);
+  const zones = useLayerZoneCalculation(locations, layerVisible && zonesVisible);
 
-  if (!visible || zones.length === 0) return null;
+  if (!layerVisible || !zonesVisible || zones.length === 0) return null;
 
   return (
     <>
