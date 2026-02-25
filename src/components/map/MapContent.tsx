@@ -6,6 +6,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useStore } from "@/lib/store";
 import { useZoneCalculation } from "@/hooks/useZoneCalculation";
+import { useLayerZoneCalculation } from "@/hooks/useLayerZoneCalculation";
 import { cityBoundary } from "@/lib/data/city-boundary";
 import { vrpWaypoints, vfrRoutes } from "@/lib/data/layers";
 import type { ZoneResult, Vertiport } from "@/lib/models/types";
@@ -413,6 +414,77 @@ function VFRRouteOverlay() {
   );
 }
 
+// Zone colors per layer type
+const layerZoneColors: Record<string, { fill: string; stroke: string }> = {
+  ncth: { fill: "#10b981", stroke: "#059669" },
+  heliport: { fill: "#8b5cf6", stroke: "#7c3aed" },
+  helipad: { fill: "#f59e0b", stroke: "#d97706" },
+};
+
+function getLayerZoneStyle(
+  zone: ZoneResult,
+  opacity: number,
+  layerType: string
+): PathOptions {
+  const colors = layerZoneColors[layerType] || layerZoneColors.heliport;
+  if (zone.exclusivityLevel === "conditional") {
+    return {
+      fillColor: colors.fill,
+      fillOpacity: opacity * 0.5,
+      color: colors.stroke,
+      weight: 1,
+      opacity: 0.5,
+      dashArray: "4 4",
+    };
+  }
+  return {
+    fillColor: colors.fill,
+    fillOpacity: opacity * 0.7,
+    color: colors.stroke,
+    weight: 1.5,
+    opacity: 0.6,
+  };
+}
+
+function LayerZoneOverlay({ layerType }: { layerType: "ncth" | "heliport" | "helipad" }) {
+  const opacity = useStore((s) => s.zoneOpacity);
+  const visible = useStore((s) => s.layerVisibility[layerType === "heliport" ? "heliports" : layerType === "helipad" ? "helipads" : "ncth"]);
+
+  const locationsSelector = layerType === "ncth"
+    ? (s: ReturnType<typeof useStore.getState>) => s.ncthLocations
+    : layerType === "heliport"
+    ? (s: ReturnType<typeof useStore.getState>) => s.heliportLocations
+    : (s: ReturnType<typeof useStore.getState>) => s.helipadLocations;
+
+  const locations = useStore(locationsSelector);
+  const zones = useLayerZoneCalculation(locations, visible);
+
+  if (!visible || zones.length === 0) return null;
+
+  return (
+    <>
+      {zones.map((zone) => (
+        <span key={`${layerType}-zone-${zone.vertiportId}`}>
+          {zone.polygon && (
+            <GeoJSON
+              key={`${layerType}-z-${zone.vertiportId}-${JSON.stringify(zone.polygon.geometry.coordinates[0]?.slice(0, 2))}`}
+              data={zone.polygon}
+              style={() => getLayerZoneStyle(zone, opacity, layerType)}
+            />
+          )}
+          {zone.conditionalRing && (
+            <GeoJSON
+              key={`${layerType}-r-${zone.vertiportId}-${JSON.stringify(zone.conditionalRing.geometry.coordinates[0]?.slice(0, 2))}`}
+              data={zone.conditionalRing}
+              style={() => getLayerZoneStyle({ ...zone, exclusivityLevel: "conditional" }, opacity, layerType)}
+            />
+          )}
+        </span>
+      ))}
+    </>
+  );
+}
+
 function CityBoundaryLayer() {
   const show = useStore((s) => s.showCityBoundary);
   if (!show) return null;
@@ -436,6 +508,9 @@ export default function MapContent() {
         />
         <CityBoundaryLayer />
         <ZoneOverlays />
+        <LayerZoneOverlay layerType="ncth" />
+        <LayerZoneOverlay layerType="heliport" />
+        <LayerZoneOverlay layerType="helipad" />
         <VertiportMarkers />
         <NcthMarkers />
         <HeliportMarkers />
