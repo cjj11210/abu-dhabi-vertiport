@@ -96,7 +96,7 @@ export const useStore = create<AppState>((set) => ({
 
   // Layer visibility
   layerVisibility: {
-    pppVertiports: false,
+    pppVertiports: true,
     ncth: false,
     heliports: false,
     helipads: false,
